@@ -9,16 +9,16 @@ interface CurrentCaffeineLevelProps {
 
 export function CurrentCaffeineLevel({ level }: CurrentCaffeineLevelProps) {
   const getStatusColor = () => {
-    if (level < 50) return "text-secondary"
-    if (level < 150) return "text-accent"
-    if (level < 300) return "text-chart-4"
+    if (level < 25) return "text-secondary"
+    if (level < 75) return "text-accent"
+    if (level < 150) return "text-chart-4"
     return "text-destructive"
   }
 
   const getStatusText = () => {
-    if (level < 50) return "Low - Perfect for sleep"
-    if (level < 150) return "Moderate - Nicely alert"
-    if (level < 300) return "High - Feeling energized"
+    if (level < 25) return "Low - Perfect for sleep"
+    if (level < 75) return "Moderate - Nicely alert"
+    if (level < 150) return "High - Feeling energized"
     return "Very High - Maybe slow down?"
   }
 
