@@ -13,13 +13,10 @@ export function CaffeineChart({ entries }: CaffeineChartProps) {
     if (entries.length === 0) return []
 
     const now = new Date()
-    const earliestEntry = entries.reduce(
-      (earliest, entry) => (entry.timestamp < earliest ? entry.timestamp : earliest),
-      entries[0].timestamp,
-    )
 
-    const startTime = new Date(Math.min(earliestEntry.getTime(), now.getTime() - 2 * 60 * 60 * 1000))
-    const endTime = new Date(now.getTime() + 12 * 60 * 60 * 1000)
+    // Display only past 24 hours and upcoming 24 hours (48 hours total)
+    const startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const endTime = new Date(now.getTime() + 24 * 60 * 60 * 1000)
 
     const data = []
     const intervalMinutes = 15
@@ -63,11 +60,17 @@ export function CaffeineChart({ entries }: CaffeineChartProps) {
         </defs>
         <CartesianGrid strokeDasharray="3 3" className="stroke-border" opacity={0.5} />
         <XAxis
-          dataKey="label"
+          dataKey="time"
           tick={{ fontSize: 12 }}
           tickLine={false}
           className="text-muted-foreground"
           interval="preserveStartEnd"
+          tickFormatter={(timestamp) =>
+            new Date(timestamp).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          }
         />
         <YAxis
           tick={{ fontSize: 12 }}
@@ -84,10 +87,17 @@ export function CaffeineChart({ entries }: CaffeineChartProps) {
             color: "hsl(var(--popover-foreground))",
           }}
           formatter={(value: number) => [`${value}mg`, "Caffeine"]}
-          labelFormatter={(label) => label}
+          labelFormatter={(timestamp) =>
+            new Date(timestamp).toLocaleString([], {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          }
         />
         <ReferenceLine
-          x={chartData.find((d) => d.time >= now)?.label}
+          x={chartData.find((d) => d.time >= now)?.time}
           stroke="hsl(280, 65%, 60%)"
           strokeDasharray="5 5"
           label={{
