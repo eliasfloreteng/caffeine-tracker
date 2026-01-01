@@ -2,12 +2,17 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Activity } from "lucide-react"
+import { type CaffeineEntry, calculateTimeUntilThreshold } from "@/lib/caffeine-utils"
 
 interface CurrentCaffeineLevelProps {
   level: number
+  entries: CaffeineEntry[]
 }
 
-export function CurrentCaffeineLevel({ level }: CurrentCaffeineLevelProps) {
+export function CurrentCaffeineLevel({ level, entries }: CurrentCaffeineLevelProps) {
+  const THRESHOLD = 20 // mg
+  const thresholdTime = calculateTimeUntilThreshold(entries, THRESHOLD)
+
   const getStatusColor = () => {
     if (level < 25) return "text-secondary"
     if (level < 75) return "text-accent"
@@ -20,6 +25,30 @@ export function CurrentCaffeineLevel({ level }: CurrentCaffeineLevelProps) {
     if (level < 75) return "Moderate - Nicely alert"
     if (level < 150) return "High - Feeling energized"
     return "Very High - Maybe slow down?"
+  }
+
+  const formatThresholdTime = () => {
+    if (!thresholdTime) {
+      return `Already below ${THRESHOLD}mg`
+    }
+
+    const now = new Date()
+    const msUntil = thresholdTime.getTime() - now.getTime()
+    const hoursUntil = msUntil / (1000 * 60 * 60)
+
+    if (hoursUntil < 1) {
+      const minutesUntil = Math.round(msUntil / (1000 * 60))
+      return `Below ${THRESHOLD}mg in ${minutesUntil}min`
+    } else if (hoursUntil < 24) {
+      const hours = Math.floor(hoursUntil)
+      const minutes = Math.round((hoursUntil - hours) * 60)
+      return `Below ${THRESHOLD}mg in ${hours}h ${minutes}m`
+    } else {
+      return `Below ${THRESHOLD}mg at ${thresholdTime.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })} tomorrow`
+    }
   }
 
   return (
@@ -39,6 +68,7 @@ export function CurrentCaffeineLevel({ level }: CurrentCaffeineLevelProps) {
         </div>
         <div className="text-right">
           <p className={`font-medium ${getStatusColor()}`}>{getStatusText()}</p>
+          <p className="text-xs text-muted-foreground mt-1">{formatThresholdTime()}</p>
           <p className="text-xs text-muted-foreground">Half-life: ~5 hours</p>
         </div>
       </CardContent>

@@ -71,7 +71,7 @@ export function CaffeineTracker() {
 
   return (
     <div className="space-y-6">
-      <CurrentCaffeineLevel level={currentLevel} />
+      <CurrentCaffeineLevel level={currentLevel} entries={entries} />
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
