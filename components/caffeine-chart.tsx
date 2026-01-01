@@ -13,13 +13,10 @@ export function CaffeineChart({ entries }: CaffeineChartProps) {
     if (entries.length === 0) return []
 
     const now = new Date()
-    const earliestEntry = entries.reduce(
-      (earliest, entry) => (entry.timestamp < earliest ? entry.timestamp : earliest),
-      entries[0].timestamp,
-    )
 
-    const startTime = new Date(Math.min(earliestEntry.getTime(), now.getTime() - 2 * 60 * 60 * 1000))
-    const endTime = new Date(now.getTime() + 12 * 60 * 60 * 1000)
+    // Display only past 24 hours and upcoming 24 hours (48 hours total)
+    const startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const endTime = new Date(now.getTime() + 24 * 60 * 60 * 1000)
 
     const data = []
     const intervalMinutes = 15
