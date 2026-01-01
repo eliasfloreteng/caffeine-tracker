@@ -35,19 +35,20 @@ export function CurrentCaffeineLevel({ level, entries }: CurrentCaffeineLevelPro
     const now = new Date()
     const msUntil = thresholdTime.getTime() - now.getTime()
     const hoursUntil = msUntil / (1000 * 60 * 60)
+    const actualTime = thresholdTime.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    })
 
     if (hoursUntil < 1) {
       const minutesUntil = Math.round(msUntil / (1000 * 60))
-      return `Below ${THRESHOLD}mg in ${minutesUntil}min`
+      return `Below ${THRESHOLD}mg in ${minutesUntil}min (at ${actualTime})`
     } else if (hoursUntil < 24) {
       const hours = Math.floor(hoursUntil)
       const minutes = Math.round((hoursUntil - hours) * 60)
-      return `Below ${THRESHOLD}mg in ${hours}h ${minutes}m`
+      return `Below ${THRESHOLD}mg in ${hours}h ${minutes}m (at ${actualTime})`
     } else {
-      return `Below ${THRESHOLD}mg at ${thresholdTime.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })} tomorrow`
+      return `Below ${THRESHOLD}mg at ${actualTime} tomorrow`
     }
   }
 
