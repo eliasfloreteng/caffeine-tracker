@@ -1,17 +1,32 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DrinkSelector } from "@/components/drink-selector"
 import { CaffeineChart } from "@/components/caffeine-chart"
 import { ConsumptionLog } from "@/components/consumption-log"
 import { CurrentCaffeineLevel } from "@/components/current-caffeine-level"
+import { BedtimeInsights } from "@/components/bedtime-insights"
 import { type CaffeineEntry, calculateCaffeineLevel } from "@/lib/caffeine-utils"
 
 const STORAGE_KEY = "caffeine-tracker-entries"
+const BEDTIME_STORAGE_KEY = "caffeine-tracker-bedtime"
+const DEFAULT_BEDTIME = "22:00"
+
+function parseBedtimeString(timeStr: string): Date {
+  const [hours, minutes] = timeStr.split(":").map(Number)
+  const bedtime = new Date()
+  bedtime.setHours(hours, minutes, 0, 0)
+  // If bedtime has passed today, set it for tomorrow
+  if (bedtime.getTime() < Date.now()) {
+    bedtime.setDate(bedtime.getDate() + 1)
+  }
+  return bedtime
+}
 
 export function CaffeineTracker() {
   const [entries, setEntries] = useState<CaffeineEntry[]>([])
+  const [bedtimeStr, setBedtimeStr] = useState(DEFAULT_BEDTIME)
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
@@ -29,6 +44,10 @@ export function CaffeineTracker() {
         console.error("Failed to parse stored entries", e)
       }
     }
+    const storedBedtime = localStorage.getItem(BEDTIME_STORAGE_KEY)
+    if (storedBedtime) {
+      setBedtimeStr(storedBedtime)
+    }
     setIsLoaded(true)
   }, [])
 
@@ -37,6 +56,18 @@ export function CaffeineTracker() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
     }
   }, [entries, isLoaded])
+
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem(BEDTIME_STORAGE_KEY, bedtimeStr)
+    }
+  }, [bedtimeStr, isLoaded])
+
+  const bedtime = useMemo(() => parseBedtimeString(bedtimeStr), [bedtimeStr])
+
+  const handleBedtimeChange = useCallback((time: string) => {
+    setBedtimeStr(time)
+  }, [])
 
   const addEntry = (drink: string, caffeineAmount: number, icon: string) => {
     const newEntry: CaffeineEntry = {
@@ -83,14 +114,11 @@ export function CaffeineTracker() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Consumption</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ConsumptionLog entries={entries} onRemove={removeEntry} onUpdateTime={updateEntryTime} />
-          </CardContent>
-        </Card>
+        <BedtimeInsights
+          entries={entries}
+          bedtime={bedtime}
+          onBedtimeChange={handleBedtimeChange}
+        />
       </div>
 
       <Card>
@@ -99,6 +127,15 @@ export function CaffeineTracker() {
         </CardHeader>
         <CardContent>
           <CaffeineChart entries={entries} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Consumption</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ConsumptionLog entries={entries} onRemove={removeEntry} onUpdateTime={updateEntryTime} />
         </CardContent>
       </Card>
     </div>
