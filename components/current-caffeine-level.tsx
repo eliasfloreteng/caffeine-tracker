@@ -2,7 +2,12 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Activity } from "lucide-react"
-import { type CaffeineEntry, calculateTimeUntilThreshold } from "@/lib/caffeine-utils"
+import {
+  type CaffeineEntry,
+  calculateTimeUntilThreshold,
+  CAFFEINE_HALF_LIFE_HOURS,
+  DEFAULT_BEDTIME_THRESHOLD,
+} from "@/lib/caffeine-utils"
 
 interface CurrentCaffeineLevelProps {
   level: number
@@ -10,7 +15,7 @@ interface CurrentCaffeineLevelProps {
 }
 
 export function CurrentCaffeineLevel({ level, entries }: CurrentCaffeineLevelProps) {
-  const THRESHOLD = 20 // mg
+  const THRESHOLD = DEFAULT_BEDTIME_THRESHOLD // 50mg conservative target
   const thresholdTime = calculateTimeUntilThreshold(entries, THRESHOLD)
 
   const getStatusColor = () => {
@@ -70,7 +75,7 @@ export function CurrentCaffeineLevel({ level, entries }: CurrentCaffeineLevelPro
         <div className="text-right">
           <p className={`font-medium ${getStatusColor()}`}>{getStatusText()}</p>
           <p className="text-xs text-muted-foreground mt-1">{formatThresholdTime()}</p>
-          <p className="text-xs text-muted-foreground">Half-life: ~5 hours</p>
+          <p className="text-xs text-muted-foreground">Half-life: ~{CAFFEINE_HALF_LIFE_HOURS} hours</p>
         </div>
       </CardContent>
     </Card>
