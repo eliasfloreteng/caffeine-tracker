@@ -2,12 +2,13 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DrinkSelector } from "@/components/drink-selector"
+import { Button } from "@/components/ui/button"
 import { CaffeineChart } from "@/components/caffeine-chart"
 import { ConsumptionLog } from "@/components/consumption-log"
 import { CurrentCaffeineLevel } from "@/components/current-caffeine-level"
-import { BedtimeInsights } from "@/components/bedtime-insights"
+import { AddDrinkModal } from "@/components/add-drink-modal"
 import { type CaffeineEntry, calculateCaffeineLevel } from "@/lib/caffeine-utils"
+import { Plus } from "lucide-react"
 
 const STORAGE_KEY = "caffeine-tracker-entries"
 const BEDTIME_STORAGE_KEY = "caffeine-tracker-bedtime"
@@ -28,6 +29,7 @@ export function CaffeineTracker() {
   const [entries, setEntries] = useState<CaffeineEntry[]>([])
   const [bedtimeStr, setBedtimeStr] = useState(DEFAULT_BEDTIME)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [addDrinkOpen, setAddDrinkOpen] = useState(false)
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY)
@@ -102,28 +104,25 @@ export function CaffeineTracker() {
 
   return (
     <div className="space-y-6">
-      <CurrentCaffeineLevel level={currentLevel} entries={entries} />
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Add Drink</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DrinkSelector onAddDrink={addEntry} />
-          </CardContent>
-        </Card>
-
-        <BedtimeInsights
-          entries={entries}
-          bedtime={bedtime}
-          onBedtimeChange={handleBedtimeChange}
-        />
-      </div>
+      <CurrentCaffeineLevel
+        level={currentLevel}
+        entries={entries}
+        bedtime={bedtime}
+        bedtimeStr={bedtimeStr}
+        onBedtimeChange={handleBedtimeChange}
+      />
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Caffeine Level Over Time</CardTitle>
+          <Button
+            onClick={() => setAddDrinkOpen(true)}
+            size="sm"
+            className="gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            Add Drink
+          </Button>
         </CardHeader>
         <CardContent>
           <CaffeineChart entries={entries} />
@@ -138,6 +137,12 @@ export function CaffeineTracker() {
           <ConsumptionLog entries={entries} onRemove={removeEntry} onUpdateTime={updateEntryTime} />
         </CardContent>
       </Card>
+
+      <AddDrinkModal
+        open={addDrinkOpen}
+        onOpenChange={setAddDrinkOpen}
+        onAddDrink={addEntry}
+      />
     </div>
   )
 }
